@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities & component classes */
+:root {
+  --brand: #0b63ff;
+  --muted: #6b7280;
+}
+
+/* small ui helpers */
+.btn {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium;
+}
+.btn-primary { @apply bg-[var(--brand)] text-white shadow hover:brightness-95; }
+.btn-ghost { @apply bg-transparent border border-gray-200 text-[var(--brand)]; }
+
+/* Card component */
+.card {
+  @apply bg-white rounded-2xl shadow p-6;
+}
+
+/* Form input */
+.input {
+  @apply w-full border border-gray-200 rounded-md px-4 py-2 focus:ring-2 focus:ring-[var(--brand)] focus:outline-none;
+}
