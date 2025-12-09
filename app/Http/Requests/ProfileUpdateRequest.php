@@ -2,29 +2,33 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        $userId = $this->user() ? $this->user()->id : null;
+
+        return [
+            'name' => ['required','string','max:191'],
+            // 'email' => ['required','email','max:191','unique:users,email,'.$userId],
+            'nik' => ['nullable','digits:16','unique:wajib_pajaks,nik,'.$this->user()->wajibPajak?->id],
+            'no_hp' => ['nullable','string','max:30'],
+            'alamat' => ['nullable','string','max:1000'],
+        ];
+    }
+
+    public function messages()
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            'nik.digits' => 'NIK harus terdiri dari 16 digit.',
+            'nik.unique' => 'NIK sudah terdaftar pada akun lain.',
         ];
     }
 }

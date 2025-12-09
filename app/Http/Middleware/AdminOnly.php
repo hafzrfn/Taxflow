@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class AdminOnly
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        $user = $request->user();
+        // Only allow the specific admin email
+        if (!$user || $user->email !== 'admin@demo.test') {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            }
+            return redirect()->route('dashboard')->with('error', 'Akses hanya untuk admin.');
+        }
+
+        return $next($request);
+    }
+}

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="max-w-md mx-auto mt-8">
-  <x-card title="Daftar Akun">
+  <x-card title="Daftar data identitas Wajib Pajak">
     <form method="POST" action="{{ route('register') }}">
       @csrf
 
@@ -17,6 +17,24 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">NIK (16 digit)</label>
         <input name="nik" type="text" maxlength="16" pattern="\d{16}" value="{{ old('nik') }}" class="input" />
         @error('nik')
+          <div class="text-xs text-red-600 mt-1">{{ $message }}</div>
+        @enderror
+      </div>
+
+      <!-- No. HP -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
+        <input name="no_hp" type="text" maxlength="20" value="{{ old('no_hp') }}" class="input" />
+        @error('no_hp')
+          <div class="text-xs text-red-600 mt-1">{{ $message }}</div>
+        @enderror
+      </div>
+
+      <!-- Alamat -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+        <textarea name="alamat" rows="3" class="input">{{ old('alamat') }}</textarea>
+        @error('alamat')
           <div class="text-xs text-red-600 mt-1">{{ $message }}</div>
         @enderror
       </div>

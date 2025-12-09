@@ -2,59 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\WajibPajak;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    // Tampilkan form edit profil
+    public function edit(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
-    }
-
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
-        Auth::logout();
+        // Do not auto-create a WajibPajak with a TEMP NIK here. If one doesn't exist,
+        // pass a new (unsaved) model to the view so the form shows empty values.
+        // Creating a TEMP NIK record caused users' real NIKs to be overwritten.
+        // Reload the user with fresh WajibPajak data (important after registration).
+        $user = \App\Models\User::with('wajibPajak')->find($user->id);
+        $wajibPajak = $user->wajibPajak ?? new WajibPajak();
 
-        $user->delete();
+        return view('profile.edit', [
+            'user' => $user,
+            'wajibPajak' => $wajibPajak,
+        ]);
+    }
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    // Simpan perubahan profil
+    public function update(ProfileUpdateRequest $request)
+    {
+        $user = $request->user();
+        $data = $request->validated();
 
-        return Redirect::to('/');
+        // update user basic (name, email optional)
+        $user->name = $data['name'] ?? $user->name;
+        // jika ingin user bisa ubah email uncomment: $user->email = $data['email'];
+        $user->save();
+
+        // update atau buat WajibPajak
+        $wajib = $user->wajibPajak;
+        if (!$wajib) {
+            $wajib = new WajibPajak();
+            $wajib->user_id = $user->id;
+        }
+
+        // isi field WajibPajak
+        $wajib->nik = $data['nik'] ?? $wajib->nik;
+        $wajib->no_hp = $data['no_hp'] ?? $wajib->no_hp;
+        $wajib->alamat = $data['alamat'] ?? $wajib->alamat;
+
+        // jika NIK diisi, set status ke PENDING_VERIF (administratif)
+        if (!empty($data['nik'])) {
+            $wajib->status = 'PENDING_VERIF';
+        }
+
+        $wajib->save();
+
+        return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    // optional: destroy profile (keep or remove)
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+        // implement if required
+        return redirect()->route('dashboard')->with('info', 'Fitur hapus akun belum diimplementasikan.');
     }
 }

@@ -10,11 +10,19 @@
 
     <div class="flex items-center gap-4">
       <a href="{{ route('home') }}" class="text-sm text-gray-700 hidden sm:inline">Home</a>
-      <a href="{{ route('spt.form') }}" class="text-sm text-gray-700 hidden sm:inline">e-Filing</a>
-      <a href="{{ route('payments.list') }}" class="text-sm text-gray-700 hidden sm:inline">Pembayaran</a>
 
+      {{-- Hide e-Filing and Pembayaran links for admin user --}}
       @auth
+        @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
+          <a href="{{ route('spt.form') }}" class="text-sm text-gray-700 hidden sm:inline">e-Filing</a>
+          <a href="{{ route('payments.list') }}" class="text-sm text-gray-700 hidden sm:inline">Pembayaran</a>
+        @endif
+
         <a href="{{ route('dashboard') }}" class="text-sm text-gray-700">Dashboard</a>
+        {{-- Hide Profile link for admin --}}
+        @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
+          <a href="{{ route('profile.edit') }}" class="text-sm text-gray-700 ml-3">Profile</a>
+        @endif
         <form method="POST" action="{{ route('logout') }}" class="inline">
           @csrf
           <button class="ml-2 text-sm text-red-600">Logout</button>

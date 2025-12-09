@@ -17,6 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Ensure admin user exists with known password (for development only)
+        $adminData = [
+            'name' => 'Administrator',
+            'email' => 'admin@demo.test',
+            'password' => bcrypt('secret123'), // hardcoded development password
+        ];
+
+        // Create or update admin user
+        \App\Models\User::updateOrCreate(
+            ['email' => $adminData['email']],
+            ['name' => $adminData['name'], 'password' => $adminData['password']]
+        );
+
+        // keep example user
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',

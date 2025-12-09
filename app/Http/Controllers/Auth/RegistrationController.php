@@ -37,13 +37,26 @@ class RegistrationController extends Controller
 
             $status = $verify['success'] ? 'VERIFIED' : 'PENDING_VERIF';
 
-            $wp = WajibPajak::create([
-                'user_id' => $user->id,
-                'nik' => $data['nik'],
-                'no_hp' => $data['no_hp'] ?? null,
-                'alamat' => $data['alamat'] ?? ($verify['data']['address'] ?? null),
-                'status' => $status,
-            ]);
+            // If a placeholder WajibPajak (TEMP-) was created earlier (e.g., from profile edit),
+            // update it instead of creating a duplicate. This ensures the user's real NIK
+            // and contact are available immediately after registration.
+            $existing = WajibPajak::where('user_id', $user->id)->first();
+            if ($existing) {
+                $existing->nik = $data['nik'];
+                $existing->no_hp = $data['no_hp'] ?? $existing->no_hp;
+                $existing->alamat = $data['alamat'] ?? ($verify['data']['address'] ?? $existing->alamat);
+                $existing->status = $status;
+                $existing->save();
+                $wp = $existing;
+            } else {
+                $wp = WajibPajak::create([
+                    'user_id' => $user->id,
+                    'nik' => $data['nik'],
+                    'no_hp' => $data['no_hp'] ?? null,
+                    'alamat' => $data['alamat'] ?? ($verify['data']['address'] ?? null),
+                    'status' => $status,
+                ]);
+            }
 
             AuditLog::create([
                 'actor' => 'system',
@@ -59,8 +72,9 @@ class RegistrationController extends Controller
                 NotifyAdminManualVerify::dispatch($wp);
             }
 
-            // optional: auto-login
-            // auth()->login($user);
+            // Auto-login using a fresh user model so relations are up-to-date
+            $freshUser = \App\Models\User::find($user->id);
+            auth()->login($freshUser);
 
             return redirect()->route('dashboard')->with('success', 'Registrasi berhasil. ' . ($verify['success'] ? 'Terverifikasi.' : 'Menunggu verifikasi.'));
         });

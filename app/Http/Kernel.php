@@ -64,5 +64,6 @@ class Kernel extends HttpKernel
 
         // <-- add custom route middleware here
         'role' => \App\Http\Middleware\CheckRole::class,
+        'admin.only' => \App\Http\Middleware\AdminOnly::class,
     ];
 }
