@@ -1,36 +1,40 @@
-<nav class="bg-white shadow-sm">
-  <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="{{ url('/') }}" class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-lg bg-[var(--brand)] flex items-center justify-center text-white font-bold">SP</div>
-      <div class="hidden md:block">
-        <div class="font-semibold">{{ config('app.name', 'SIM Pajak') }}</div>
-        <div class="text-xs text-gray-500">Sistem Informasi Manajemen Pajak</div>
+<nav class="glass sticky top-0 z-50 border-b border-white/20 shadow-lg">
+  <div class="container-custom">
+    <div class="flex items-center justify-between h-16">
+      <a href="{{ url('/') }}" class="flex items-center gap-3 group">
+        <img src="{{ asset('images/taxflow-logo.png') }}" alt="TaxFlow"
+          class="h-10 w-auto group-hover:scale-105 transition-transform duration-300">
+      </a>
+
+      <div class="flex items-center gap-4">
+        <a href="{{ route('home') }}"
+          class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Home</a>
+
+        {{-- Hide e-Filing and Pembayaran links for admin user --}}
+        @auth
+          @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
+            <a href="{{ route('spt.form') }}"
+              class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">e-Filing</a>
+            <a href="{{ route('payments.list') }}"
+              class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Pembayaran</a>
+          @endif
+
+          <a href="{{ route('dashboard') }}"
+            class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Dashboard</a>
+          {{-- Hide Profile link for admin --}}
+          @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
+            <a href="{{ route('profile.edit') }}"
+              class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Profile</a>
+          @endif
+          <form method="POST" action="{{ route('logout') }}" class="inline">
+            @csrf
+            <button class="btn btn-danger btn-sm">Logout</button>
+          </form>
+        @else
+          <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Login</a>
+          <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Daftar</a>
+        @endauth
       </div>
-    </a>
-
-    <div class="flex items-center gap-4">
-      <a href="{{ route('home') }}" class="text-sm text-gray-700 hidden sm:inline">Home</a>
-
-      {{-- Hide e-Filing and Pembayaran links for admin user --}}
-      @auth
-        @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
-          <a href="{{ route('spt.form') }}" class="text-sm text-gray-700 hidden sm:inline">e-Filing</a>
-          <a href="{{ route('payments.list') }}" class="text-sm text-gray-700 hidden sm:inline">Pembayaran</a>
-        @endif
-
-        <a href="{{ route('dashboard') }}" class="text-sm text-gray-700">Dashboard</a>
-        {{-- Hide Profile link for admin --}}
-        @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
-          <a href="{{ route('profile.edit') }}" class="text-sm text-gray-700 ml-3">Profile</a>
-        @endif
-        <form method="POST" action="{{ route('logout') }}" class="inline">
-          @csrf
-          <button class="ml-2 text-sm text-red-600">Logout</button>
-        </form>
-      @else
-        <a href="{{ route('login') }}" class="btn btn-ghost">Login</a>
-        <a href="{{ route('register') }}" class="btn btn-primary">Daftar</a>
-      @endauth
     </div>
   </div>
 </nav>
