@@ -7,16 +7,19 @@
       </a>
 
       <div class="flex items-center gap-4">
-        <a href="{{ route('home') }}"
-          class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Home</a>
+        {{-- Show Home link only for guests --}}
+        @guest
+          <a href="{{ route('home') }}"
+            class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Home</a>
+        @endguest
 
-        {{-- Hide e-Filing and Pembayaran links for admin user --}}
+        {{-- Hide e-Filing and Riwayat links for admin user --}}
         @auth
           @if(!(Auth::user() && Auth::user()->email === 'admin@demo.test'))
             <a href="{{ route('spt.form') }}"
               class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">e-Filing</a>
             <a href="{{ route('payments.list') }}"
-              class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Pembayaran</a>
+              class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors hidden sm:inline">Riwayat</a>
           @endif
 
           <a href="{{ route('dashboard') }}"

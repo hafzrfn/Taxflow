@@ -3,7 +3,7 @@
     <div class="grid md:grid-cols-3 gap-8 mb-8">
       <div>
         <div class="flex items-center gap-3 mb-4">
-          <img src="{{ asset('images/taxflow-logo.png') }}" alt="TaxFlow" class="h-10 w-auto brightness-0 invert">
+          <img src="{{ asset('images/taxflow-logo.png') }}" alt="TaxFlow" class="h-10 w-auto">
         </div>
         <p class="text-sm">Smooth, efficient tax management</p>
       </div>

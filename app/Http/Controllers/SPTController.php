@@ -37,7 +37,7 @@ class SPTController extends Controller
             $wajibPajak = WajibPajak::create([
                 'user_id' => $user->id,
                 // gunakan placeholder yang unik (untuk demo). Di produksi, minta user isi NIK valid.
-                'nik' => 'NIK-'.now()->timestamp . '-' . $user->id,
+                'nik' => 'NIK-' . now()->timestamp . '-' . $user->id,
                 'no_hp' => $user->phone ?? null,
                 'alamat' => $user->alamat ?? 'Belum diisi',
                 'status' => 'PENDING_VERIF',
@@ -56,12 +56,12 @@ class SPTController extends Controller
         // buat SPT dalam transaksi agar atomic
         $spt = DB::transaction(function () use ($wajibPajak, $data, $filePaths, $user) {
             $spt = SPT::create([
-                'wajib_pajak_id'    => $wajibPajak->id,
-                'tahun_pajak'       => $data['tahun_pajak'],
-                'penghasilan'       => $data['penghasilan'],
-                'jenis_spt'         => $data['jenis_spt'],
+                'wajib_pajak_id' => $wajibPajak->id,
+                'tahun_pajak' => $data['tahun_pajak'],
+                'penghasilan' => $data['penghasilan'],
+                'jenis_spt' => $data['jenis_spt'],
                 'status_verifikasi' => 'PENDING',
-                'receipt_id'        => 'RCPT-' . time() . '-' . substr(md5(uniqid()), 0, 8),
+                'receipt_id' => 'RCPT-' . time() . '-' . substr(md5(uniqid()), 0, 8),
             ]);
 
             // simpan audit log (pastikan AuditLog model punya $fillable yg sesuai)
@@ -76,9 +76,9 @@ class SPTController extends Controller
 
         // redirect ke dashboard dengan flash message
         return redirect()->route('dashboard')
-                         ->with('success', 'SPT submitted successfully')
-                         ->with('spt_id', $spt->id)
-                         ->with('receipt_id', $spt->receipt_id);
+            ->with('success', 'SPT submitted successfully')
+            ->with('spt_id', $spt->id)
+            ->with('receipt_id', $spt->receipt_id);
     }
 
     /**
@@ -97,8 +97,8 @@ class SPTController extends Controller
         }
 
         $spts = SPT::where('wajib_pajak_id', $wajibPajak->id)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(10);
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('spt.index', compact('spts', 'wajibPajak'));
     }
@@ -120,22 +120,20 @@ class SPTController extends Controller
 
         // Cek apakah SPT milik user
         $spt = SPT::where('id', $sptId)
-                   ->where('wajib_pajak_id', $wajibPajak->id)
-                   ->first();
+            ->where('wajib_pajak_id', $wajibPajak->id)
+            ->first();
 
         if (!$spt) {
             return redirect()->route('spt.index')->with('error', 'SPT tidak ditemukan');
         }
 
-        // Generate PDF content
-        $pdfContent = $this->generateReceiptPdf($spt, $wajibPajak, $user);
+        // Generate HTML content
+        $html = $this->generateReceiptPdf($spt, $wajibPajak, $user);
 
-        // Download sebagai PDF
-        return response()->streamDownload(
-            fn () => print($pdfContent),
-            'bukti_penerimaan_spt_'.$spt->receipt_id.'.pdf',
-            ['Content-Type' => 'application/pdf']
-        );
+        // Return as HTML response for browser to display and print
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+        ]);
     }
 
     /**
@@ -145,9 +143,10 @@ class SPTController extends Controller
     {
         // Untuk saat ini, kita generate HTML yang bisa di-print
         // Di produksi, gunakan library seperti DOMPDF atau mPDF
-        
-        $nama = $wajibPajak->nama ?? 'N/A';
-        $npwp = $wajibPajak->npwp ?? 'N/A';
+
+        // Ambil nama dari user, bukan dari wajibPajak (karena WajibPajak tidak punya kolom nama)
+        $nama = $user->name ?? $wajibPajak->user->name ?? 'N/A';
+        $nik = $wajibPajak->nik ?? 'N/A';
         $alamat = $wajibPajak->alamat ?? 'N/A';
         $tahunPajak = $spt->tahun_pajak;
         $jenisSpt = $spt->jenis_spt;
@@ -156,7 +155,7 @@ class SPTController extends Controller
         $receiptId = $spt->receipt_id;
         $tanggalPenerimaan = $spt->created_at->format('d/m/Y H:i:s');
         $statusClass = strtolower($statusVerifikasi === 'PENDING' ? 'pending' : ($statusVerifikasi === 'VERIFIED' ? 'verified' : 'rejected'));
-        
+
         $html = <<<HTML
 <!DOCTYPE html>
 <html>
@@ -191,7 +190,7 @@ class SPTController extends Controller
     <div class="section">
         <h3>Data Wajib Pajak</h3>
         <p><span class="label">Nama:</span> <span class="value">{$nama}</span></p>
-        <p><span class="label">NPWP:</span> <span class="value">{$npwp}</span></p>
+        <p><span class="label">NIK:</span> <span class="value">{$nik}</span></p>
         <p><span class="label">Alamat:</span> <span class="value">{$alamat}</span></p>
     </div>
 

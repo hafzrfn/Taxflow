@@ -14,6 +14,14 @@ class ObjekPajak extends Model
         'jenis',
         'nilai_objek',
         'alamat_objek',
+        // Vehicle-specific fields
+        'jenis_kendaraan',
+        'plat_nomor',
+        'stnk_path',
+        // Business-specific fields
+        'nama_bisnis',
+        'jenis_bisnis',
+        'dokumen_usaha_path',
     ];
 
     // relations

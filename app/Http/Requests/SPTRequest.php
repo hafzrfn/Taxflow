@@ -32,11 +32,11 @@ class SPTRequest extends FormRequest
     public function rules()
     {
         return [
-            'tahun_pajak' => ['required','digits:4','integer'],
-            'penghasilan' => ['required','numeric','min:0'],
-            'jenis_spt'   => ['required','in:TAHUNAN,BULANAN'],
-            'attachments' => ['sometimes','array'],
-            'attachments.*' => ['file','mimes:pdf,jpg,jpeg,png','max:5120'], // max 5MB
+            'tahun_pajak' => ['required', 'digits:4', 'integer'],
+            'penghasilan' => ['required', 'numeric', 'min:0'],
+            'jenis_spt' => ['required', 'in:TAHUNAN,BULANAN'],
+            'attachments' => ['required', 'array', 'min:1'], // Changed from 'sometimes' to 'required'
+            'attachments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // max 5MB
         ];
     }
 
@@ -52,6 +52,8 @@ class SPTRequest extends FormRequest
             'tahun_pajak.digits' => 'Isi tahun pajak 4 digit (mis. 2025).',
             'penghasilan.required' => 'Penghasilan wajib diisi.',
             'jenis_spt.in' => 'Jenis SPT harus TAHUNAN atau BULANAN.',
+            'attachments.required' => 'Dokumen lampiran wajib diunggah.',
+            'attachments.min' => 'Minimal 1 dokumen harus diunggah.',
             'attachments.*.mimes' => 'Lampiran harus berupa PDF atau gambar (jpg/png).',
             'attachments.*.max' => 'Lampiran maksimal 5MB per file.',
         ];
