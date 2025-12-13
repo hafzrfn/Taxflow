@@ -173,7 +173,7 @@
                     <label for="njop" class="block text-sm font-medium text-gray-700 mb-2">
                         NJOP / Nilai Objek Pajak (Rp) *
                     </label>
-                    <input type="number" id="njop" name="njop" step="1" min="0"
+                    <input type="number" id="njop" name="njop" step="0.01" min="1" max="999999999999999"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('njop') border-red-500 @enderror"
                         placeholder="Contoh: 500000000" value="{{ old('njop') }}">
                     @error('njop')
@@ -285,6 +285,43 @@
 
             // Initialize on page load
             updateFormFields();
+
+            // Validate NJOP input - maksimal 15 digit
+            const njopInput = document.getElementById('njop');
+            if (njopInput) {
+                njopInput.addEventListener('input', function() {
+                    // Hapus semua karakter non-digit kecuali titik desimal
+                    let value = this.value.replace(/[^\d.]/g, '');
+                    
+                    // Hapus titik desimal jika lebih dari satu
+                    const parts = value.split('.');
+                    if (parts.length > 2) {
+                        value = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    
+                    // Ambil bagian integer (sebelum titik desimal)
+                    const integerPart = parts[0] || '';
+                    
+                    // Batasi maksimal 15 digit pada bagian integer
+                    if (integerPart.length > 15) {
+                        value = integerPart.substring(0, 15) + (parts[1] ? '.' + parts[1] : '');
+                    }
+                    
+                    this.value = value;
+                    
+                    // Validasi nilai
+                    const numValue = parseFloat(value);
+                    const maxValue = 999999999999999; // 15 digit
+                    
+                    if (value && (isNaN(numValue) || numValue > maxValue || integerPart.length > 15)) {
+                        this.setCustomValidity('Nilai NJOP maksimal 15 digit');
+                        this.classList.add('border-red-500');
+                    } else {
+                        this.setCustomValidity('');
+                        this.classList.remove('border-red-500');
+                    }
+                });
+            }
         });
     </script>
 @endsection

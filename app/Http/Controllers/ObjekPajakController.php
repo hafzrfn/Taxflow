@@ -39,22 +39,25 @@ class ObjekPajakController extends Controller
         ];
 
         // Conditional validation based on jenis
+        // Maksimal 15 digit untuk NJOP (999999999999999)
+        $maxNilaiObjek = 999999999999999;
+        
         if ($request->jenis === 'kendaraan') {
             $rules['jenis_kendaraan'] = 'required|string|max:100';
             $rules['plat_nomor'] = 'required|string|max:20';
             $rules['stnk'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // max 5MB
-            $rules['njop'] = 'required|numeric|min:1';
+            $rules['njop'] = 'required|numeric|min:1|max:' . $maxNilaiObjek;
         } elseif ($request->jenis === 'usaha') {
             $rules['nama_bisnis'] = 'required|string|max:255';
             $rules['jenis_bisnis'] = 'required|string|max:100';
             $rules['alamat_objek'] = 'required|string|max:500';
             $rules['dokumen_usaha'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // max 5MB
-            $rules['njop'] = 'required|numeric|min:1';
+            $rules['njop'] = 'required|numeric|min:1|max:' . $maxNilaiObjek;
         } else {
             // For tanah and bangunan
             $rules['alamat_objek'] = 'required|string|max:500';
             $rules['luas'] = 'required|numeric|min:1';
-            $rules['njop'] = 'required|numeric|min:1';
+            $rules['njop'] = 'required|numeric|min:1|max:' . $maxNilaiObjek;
         }
 
         $request->validate($rules);

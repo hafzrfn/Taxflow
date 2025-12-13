@@ -1,0 +1,232 @@
+' ============================================
+' 1. REGISTRATION (Registrasi)
+' ============================================
+@startuml Registration
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+skinparam LifeLineBorderColor #000000
+skinparam LifeLineBackgroundColor #FFFFFF
+title Registrasi Wajib Pajak
+
+actor User
+participant "Registration\nController" as RegCtrl
+participant "Dukcapil\nService" as Dukcapil
+database "Database" as DB
+
+User -> RegCtrl: POST /register
+RegCtrl -> Dukcapil: verify(NIK)
+Dukcapil --> RegCtrl: Response
+
+alt Verification Success
+    RegCtrl -> DB: Create User + WajibPajak (VERIFIED)
+    RegCtrl -> RegCtrl: Auto-login
+    RegCtrl --> User: Redirect Dashboard
+else Verification Failed
+    RegCtrl -> DB: Create User + WajibPajak (PENDING_VERIF)
+    RegCtrl -> RegCtrl: Dispatch NotifyAdmin Job
+    RegCtrl -> RegCtrl: Auto-login
+    RegCtrl --> User: Redirect Dashboard
+end
+@enduml
+
+' ============================================
+' 2. LOGIN (Masuk)
+' ============================================
+@startuml Login
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title Login User
+
+actor User
+participant "Login\nController" as LoginCtrl
+database "Database" as DB
+
+User -> LoginCtrl: POST /login
+LoginCtrl -> DB: Verify credentials
+DB --> LoginCtrl: User data
+LoginCtrl -> LoginCtrl: Regenerate session
+LoginCtrl --> User: Redirect Dashboard
+@enduml
+
+' ============================================
+' 3. ISI OBJEK PAJAK (Fill Tax Object)
+' ============================================
+@startuml IsiObjekPajak
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title Isi Objek Pajak
+
+actor User
+participant "ObjekPajak\nController" as ObjekCtrl
+database "Database" as DB
+participant "Observer" as Observer
+
+User -> ObjekCtrl: GET /objek-pajak/create
+ObjekCtrl -> DB: Get WajibPajak
+DB --> ObjekCtrl: Data
+ObjekCtrl --> User: Show form
+
+User -> ObjekCtrl: POST /objek-pajak
+ObjekCtrl -> DB: Create ObjekPajak
+DB -> Observer: created event
+Observer -> Observer: Calculate tagihan (0.5%)
+Observer -> DB: Create TagihanPajak (BELUM_LUNAS)
+ObjekCtrl --> User: Redirect Dashboard
+@enduml
+
+' ============================================
+' 4. BAYAR TAGIHAN (Pay Bill)
+' ============================================
+@startuml BayarTagihan
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title Bayar Tagihan (e-Billing)
+
+actor User
+participant "Billing\nController" as BillingCtrl
+database "Database" as DB
+
+User -> BillingCtrl: GET /payments
+BillingCtrl -> DB: Get tagihan
+DB --> BillingCtrl: List tagihan
+BillingCtrl --> User: Show list
+
+User -> BillingCtrl: POST /payments/create
+BillingCtrl -> DB: Create Pembayaran (PENDING)
+BillingCtrl -> DB: Update Tagihan (PAYMENT_INITIATED)
+BillingCtrl --> User: Redirect payment page
+
+User -> BillingCtrl: GET /payments/page/{kode}
+BillingCtrl -> DB: Get Pembayaran
+DB --> BillingCtrl: Data
+BillingCtrl --> User: Show payment page
+
+User -> BillingCtrl: POST /payments/simulate/{kode}
+BillingCtrl -> DB: Update Pembayaran (SUCCESS)
+BillingCtrl -> DB: Update Tagihan (LUNAS)
+BillingCtrl --> User: Success message
+@enduml
+
+' ============================================
+' 5. E-FILING SPT (Submit SPT)
+' ============================================
+@startuml EFileSPT
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title e-Filing SPT
+
+actor User
+participant "SPT\nController" as SPTCtrl
+database "Database" as DB
+
+User -> SPTCtrl: GET /spt/form
+SPTCtrl -> DB: Get WajibPajak
+DB --> SPTCtrl: Data
+SPTCtrl --> User: Show form
+
+User -> SPTCtrl: POST /spt
+SPTCtrl -> SPTCtrl: Upload attachments
+SPTCtrl -> DB: Create SPT (PENDING, receipt_id)
+SPTCtrl -> DB: Create AuditLog
+SPTCtrl --> User: Redirect Dashboard
+
+User -> SPTCtrl: GET /spt/{id}/download-receipt
+SPTCtrl -> DB: Get SPT
+DB --> SPTCtrl: SPT data
+SPTCtrl -> SPTCtrl: Generate receipt
+SPTCtrl --> User: Return receipt
+@enduml
+
+
+' ============================================
+' 7. ADMIN VERIFIKASI SPT
+' ============================================
+@startuml AdminVerifySPT
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title Admin Verifikasi SPT
+
+actor Admin
+participant "Admin\nController" as AdminCtrl
+database "Database" as DB
+
+Admin -> AdminCtrl: GET /admin/wajib-pajaks/{id}
+AdminCtrl -> DB: Get WajibPajak + SPTs
+DB --> AdminCtrl: Data
+AdminCtrl --> Admin: Show detail
+
+Admin -> AdminCtrl: POST /admin/spt/{id}/verify
+AdminCtrl -> DB: Update SPT (VERIFIED)
+AdminCtrl --> Admin: Success message
+@enduml
+
+' ============================================
+' 8. PAYMENT CALLBACK (Webhook)
+' ============================================
+@startuml PaymentCallback
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+skinparam ParticipantPadding 20
+skinparam BoxPadding 5
+title Payment Gateway Callback
+
+participant "Payment\nGateway" as Gateway
+participant "Callback\nController" as CallbackCtrl
+participant "Verifier" as Verifier
+database "Database" as DB
+
+Gateway -> CallbackCtrl: POST callback
+CallbackCtrl -> Verifier: Verify signature
+Verifier --> CallbackCtrl: Valid?
+
+alt Invalid signature
+    CallbackCtrl -> DB: Log error
+    CallbackCtrl --> Gateway: 403 Error
+else Valid signature
+    CallbackCtrl -> DB: Get Pembayaran
+    DB --> CallbackCtrl: Data
+    alt Already SUCCESS
+        CallbackCtrl --> Gateway: 200 OK
+    else Status SUCCESS
+        CallbackCtrl -> DB: Update Pembayaran (SUCCESS)
+        CallbackCtrl -> DB: Update Tagihan (LUNAS)
+        CallbackCtrl --> Gateway: 200 OK
+    else Failed
+        CallbackCtrl -> DB: Update Pembayaran (FAILED)
+        CallbackCtrl --> Gateway: 200 OK
+    end
+end
+@enduml
