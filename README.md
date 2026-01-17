@@ -7,30 +7,19 @@
 <p align="center">
   <strong>A Modern Indonesian Tax Management System</strong>
 </p>
-
-<p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-prerequisites">Prerequisites</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-running-the-application">Running</a> •
-  <a href="#-license">License</a>
-</p>
-
 ---
 
-## 📋 About TaxFlow
+## About TaxFlow
 
 **TaxFlow** is a comprehensive tax management system designed for Indonesian citizens to easily manage their tax obligations. The platform provides a user-friendly interface for registering tax data, viewing tax bills, filing tax returns, and making online payments.
 
 ### Key Capabilities
-- 👤 User registration and authentication
-- 📊 Tax object management (Objek Pajak)
-- 📄 Tax return filing (SPT - Surat Pemberitahuan)
-- 💰 Tax bill tracking and payment
-- 🔐 Admin dashboard for oversight
-- 🔔 Email notifications
-- 💳 Payment gateway integration
+- User registration and authentication
+- Tax object management (Objek Pajak)
+- Tax return filing (SPT - Surat Pemberitahuan)
+- Tax bill tracking and payment
+- Admin dashboard for oversight
+- MOCKUPPayment gateway integration
 
 ---
 
@@ -40,7 +29,7 @@
 |-----------|-----------|
 | **Backend Framework** | Laravel 12 (PHP 8.2+) |
 | **Frontend** | Laravel Blade Templates, Tailwind CSS 3, Alpine.js |
-| **Database** | MySQL/PostgreSQL (SQLite for development) |
+| **Database** | MySQL  |
 | **Build Tool** | Vite |
 | **Testing** | PHPUnit |
 | **Package Management** | Composer (PHP), NPM (JavaScript) |
@@ -49,7 +38,7 @@
 
 ## ✅ Prerequisites
 
-Before you begin, ensure you have the following installed:
+You need these in order to run the project:
 
 - **PHP 8.2 or higher** - [Download PHP](https://www.php.net/downloads)
 - **Composer** - [Download Composer](https://getcomposer.org/)
@@ -248,122 +237,3 @@ taxflow/
 - Manual verification of tax data
 - Payment reconciliation
 - Audit logging
-
----
-
-## 🧪 Testing
-
-Run the test suite:
-
-```bash
-php artisan test
-```
-
-Run tests with coverage:
-
-```bash
-php artisan test --coverage
-```
-
----
-
-## 🔧 Common Commands
-
-```bash
-# Create new model with migration
-php artisan make:model ModelName -m
-
-# Create new controller
-php artisan make:controller ControllerName
-
-# Create new migration
-php artisan make:migration migration_name
-
-# Run migrations
-php artisan migrate
-
-# Rollback last migration
-php artisan migrate:rollback
-
-# Clear application cache
-php artisan cache:clear
-
-# Queue listener (process jobs)
-php artisan queue:listen
-
-# Generate API documentation
-php artisan tinker
-```
-
----
-
-## 📧 Email Configuration
-
-By default, emails are logged. To enable actual email sending, update `.env`:
-
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=465
-MAIL_USERNAME=your_username
-MAIL_PASSWORD=your_password
-MAIL_ENCRYPTION=ssl
-```
-
----
-
-## 📦 Deployment
-
-### Prerequisites for Deployment
-- Web server (Apache/Nginx)
-- PHP 8.2+ installed on server
-- MySQL/PostgreSQL database
-- SSH access to server
-
-### Deployment Steps
-
-1. Clone repository on server
-2. Install dependencies: `composer install --no-dev`
-3. Install Node packages: `npm install`
-4. Build assets: `npm run build`
-5. Copy `.env.example` to `.env` and configure
-6. Generate key: `php artisan key:generate`
-7. Run migrations: `php artisan migrate --force`
-8. Set permissions: `chmod -R 775 storage bootstrap/cache`
-9. Configure web server to point to `public` directory
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is open-sourced software licensed under the [MIT license](LICENSE).
-
----
-
-## 🆘 Support
-
-For issues and questions:
-- Open an issue on [GitHub Issues](https://github.com/yourusername/taxflow/issues)
-- Check existing documentation in the `TUTORIAL` folder
-
----
-
-## 👥 Authors
-
-TaxFlow is built with ❤️ for the Indonesian taxpayer community.
-
----
-
-**Last Updated:** January 2026
