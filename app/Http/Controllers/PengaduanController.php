@@ -33,3 +33,5 @@ class PengaduanController extends Controller
         return redirect()->back()->with('success','Pengaduan diupdate');
     }
 }
+
+//DISCONTINUED
